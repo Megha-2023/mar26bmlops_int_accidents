@@ -7,6 +7,7 @@ Predict the severity of road accidents in France using historical data. Severity
 
 ## Author
 Mohammad Reza Nilchiyan 
+
 MLOps Learning Project – March 2026
 
 # Road Accidents in France – MLOps Project (DVC + ML Pipeline)
@@ -48,7 +49,7 @@ idea is Instead of random split we should use time split.
 Train : 2010 — 2016
 Test  : 2017 — 2018
 
-Why?
+## Why?
 1. Column structures changed in 2019 
 2. Avoid data leakage 
 3. Simulates real future prediction
@@ -68,7 +69,7 @@ mar26bmlops_int_accidents/
 │   ├── usagers/
 │   ├── lieux/
 │   ├── vehicules/                   
-│   └── accidents_full.csv      ✅ merged dataset
+│   └── accidents_full.csv     merged dataset
 │   └── preprocessed/
 │               ├── X_train.csv
 │               ├── X_test.csv
@@ -77,10 +78,10 @@ mar26bmlops_int_accidents/
 │
 ├── src/
 │   ├
-│   └── make_dataset.py        ✅ (clean + split + feature engineering)
+│   └── make_dataset.py       (clean + split + feature engineering)
 │   └── train_model.py
 │   │    
-│   └── evaluate_model.py      ✅ (metrics only) (directly inside src)
+│   └── evaluate_model.py      (metrics only) (directly inside src)
 │
 ├── models/
 │         └── model.pkl                  (later)
@@ -103,6 +104,7 @@ Output: data/preprocessed/
 
 
 ---
+
 
 ### 2. Train Stage
 - Trains an XGBoost classifier
