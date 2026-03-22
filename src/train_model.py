@@ -43,7 +43,7 @@ def main():
     # -----------------------------
     acc = accuracy_score(y_test, y_pred)
 
-    print("\n📊 Training Evaluation")
+    print("\n Training Evaluation")
     print("----------------------")
     print(f"Accuracy: {acc:.4f}")
     print("\nClassification Report:\n")
@@ -57,7 +57,7 @@ def main():
 
     joblib.dump(model, MODEL_DIR / "xgb_model.pkl")
 
-    print("\nModel saved successfully ✅")
+    print("\nModel saved successfully ")
 
 
 if __name__ == "__main__":
