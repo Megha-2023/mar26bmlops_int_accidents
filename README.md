@@ -46,8 +46,8 @@ target variable will usually come from usagers.grav (severity).
 
 # train/test split idea
 idea is Instead of random split we should use time split.
-Train : 2010 — 2016
-Test  : 2017 — 2018
+Train : 2010 — 2015
+Test  : 2016
 
 ## Why?
 1. Column structures changed in 2019 
@@ -62,6 +62,7 @@ Also I, reduce the dataset + features safely.(Feature Engineering solution)
 
 
 mar26bmlops_int_accidents/
+
 │
 ├── data/
 │   ├   data/ │     
