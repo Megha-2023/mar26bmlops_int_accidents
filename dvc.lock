@@ -9,8 +9,8 @@ stages:
       size: 339334996
     - path: src/make_dataset.py
       hash: md5
-      md5: e49c9b8771934d678e1a74b62e286413
-      size: 3470
+      md5: 411e809a261e7ae7680c573b47642f9f
+      size: 3468
     outs:
     - path: data/preprocessed
       hash: md5
@@ -27,8 +27,8 @@ stages:
       nfiles: 4
     - path: src/train_model.py
       hash: md5
-      md5: 7e8b765b9fd2973aa0a2e030a2d6496c
-      size: 1757
+      md5: 60ec13389f5ed6dd3c7022ddb5ac53f3
+      size: 1751
     outs:
     - path: models/xgb_model.pkl
       hash: md5
@@ -48,5 +48,5 @@ stages:
       size: 3921802
     - path: src/evaluate_model.py
       hash: md5
-      md5: 0ae447aa27e7e9526fe81be6ff378665
-      size: 1067
+      md5: 0df36ca13d84ff3ec8c6d53b38f1be39
+      size: 1064
