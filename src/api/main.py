@@ -7,8 +7,18 @@ from src.api.schemas import PredictionRequest, PredictionResponse
 
 app = FastAPI(
     title="Accident Severity Prediction API",
-    description="FastAPI service for serving the trained XGBoost accident model",
-    version="1.0.0",
+    description="FastAPI service for serving the trained XGBoost accident model.",
+    version="1.1.0",
+    openapi_tags=[
+        {
+            "name": "System",
+            "description": "Service health and metadata endpoints."
+        },
+        {
+            "name": "Inference",
+            "description": "Endpoints used for accident severity prediction."
+        }
+    ]
 )
 
 # Load the model once when the API starts
@@ -22,19 +32,23 @@ MODEL_COLUMNS = [
 ]
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    tags=["System"],
+    summary="Health check",
+    description="Returns the running status of the API service."
+)
 def health():
-    """
-    Simple endpoint to verify that the API is running.
-    """
     return {"status": "ok"}
 
 
-@app.get("/model-info")
+@app.get(
+    "/model-info",
+    tags=["System"],
+    summary="Model metadata",
+    description="Returns the expected input features and metadata for the loaded model."
+)
 def model_info():
-    """
-    Return basic information about the loaded model and expected features.
-    """
     return {
         "expected_number_of_features": len(MODEL_COLUMNS),
         "feature_columns": MODEL_COLUMNS,
@@ -43,8 +57,12 @@ def model_info():
 
 @app.post(
     "/predict",
+    tags=["Inference"],
+    summary="Predict accident severity",
+    description="Takes accident-related features as input and returns the predicted severity class, confidence score, and class probabilities.",
     response_model=PredictionResponse
 )
+
 def predict(payload: PredictionRequest):
     """
     Make a prediction from a JSON body containing the 24 named features.
