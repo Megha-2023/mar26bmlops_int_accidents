@@ -1,6 +1,7 @@
 [core]
     remote = origin
-['remote "local_storage"']
-    url = ../../dvc_remote
 ['remote "origin"']
     url = https://dagshub.com/Megha-2023/mar26bmlops_int_accidents.dvc
+['remote "origin-s3"']
+    url = s3://dvc
+    endpointurl = https://dagshub.com/Megha-2023/mar26bmlops_int_accidents.dvc

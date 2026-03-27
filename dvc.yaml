@@ -1,21 +1,21 @@
 stages:
   prepare:
-    cmd: python src/make_dataset.py
+    cmd: python src/data/make_dataset.py
     deps:
-    - data/accidents_full.csv
-    - src/make_dataset.py
+      - data/accidents_full.csv
+      - src/data/make_dataset.py
     outs:
-    - data/preprocessed
+      - data/preprocessed
   train:
-    cmd: python src/train_model.py
+    cmd: python src/models/train_model.py
     deps:
-    - data/preprocessed
-    - src/train_model.py
+      - data/preprocessed
+      - src/models/train_model.py
     outs:
-    - models/xgb_model.pkl
+      - models/xgb_model.pkl
   evaluate:
-    cmd: python src/evaluate_model.py
+    cmd: python src/models/evaluate_model.py
     deps:
-    - data/preprocessed
-    - models/xgb_model.pkl
-    - src/evaluate_model.py
+      - data/preprocessed
+      - models/xgb_model.pkl
+      - src/models/evaluate_model.py
