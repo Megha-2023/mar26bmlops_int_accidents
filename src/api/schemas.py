@@ -263,6 +263,7 @@ class PredictionRequest(BaseModel):
         }
     )
     
+class PredictionResponse(BaseModel):
     """
     Output schema for accident severity prediction.
     """
