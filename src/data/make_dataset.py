@@ -10,7 +10,6 @@ def main():
     # -----------------------------
     # 0. Load data
     # -----------------------------
-    print("Loading Data....")
     df = pd.read_csv(DATA_PATH, low_memory=False)
 
     # -----------------------------
@@ -97,9 +96,18 @@ def main():
     # 9. MISSING VALUES
     # -----------------------------
     imputer = SimpleImputer(strategy="most_frequent")
+    
+    # Save column names before imputation
+    feature_names = X_train.columns.tolist()
+
 
     X_train = imputer.fit_transform(X_train)
     X_test = imputer.transform(X_test)
+    
+    # Convert back to DataFrame with original column names
+    X_train = pd.DataFrame(X_train, columns=feature_names)
+    X_test = pd.DataFrame(X_test, columns=feature_names)
+
 
     # -----------------------------
     # 10. SAVE OUTPUTS
@@ -107,12 +115,12 @@ def main():
     OUTPUT_DIR = Path("data/preprocessed")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    pd.DataFrame(X_train).to_csv(OUTPUT_DIR / "X_train.csv", index=False)
-    pd.DataFrame(X_test).to_csv(OUTPUT_DIR / "X_test.csv", index=False)
+    X_train.to_csv(OUTPUT_DIR / "X_train.csv", index=False)
+    X_test.to_csv(OUTPUT_DIR / "X_test.csv", index=False)
     pd.DataFrame(y_train).to_csv(OUTPUT_DIR / "y_train.csv", index=False)
     pd.DataFrame(y_test).to_csv(OUTPUT_DIR / "y_test.csv", index=False)
 
-    print("Dataset prepared Successfully ! ")
+    print("Dataset prepared successfully ")
 
 
 if __name__ == "__main__":
