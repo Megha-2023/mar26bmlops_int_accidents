@@ -3,6 +3,7 @@ import pandas as pd
 
 from src.api.schemas import PredictionRequest
 from src.api.model_loader import load_model
+from src.api.schemas import PredictionRequest, PredictionResponse
 
 app = FastAPI(
     title="Accident Severity Prediction API",
@@ -40,13 +41,15 @@ def model_info():
     }
 
 
-@app.post("/predict")
+@app.post(
+    "/predict",
+    response_model=PredictionResponse
+)
 def predict(payload: PredictionRequest):
     """
     Make a prediction from a JSON body containing the 24 named features.
     """
     try:
-        # Export using aliases so "intersection_type" becomes "int"
         payload_dict = payload.model_dump(by_alias=True)
 
         data = pd.DataFrame(
@@ -54,7 +57,12 @@ def predict(payload: PredictionRequest):
             columns=MODEL_COLUMNS
         )
 
-        prediction = int(model.predict(data)[0])
+        # Get probabilities for all classes
+        proba = model.predict_proba(data)[0]
+
+        # Predicted class = class with highest probability
+        prediction = int(proba.argmax())
+        confidence = float(max(proba))
 
         severity_map = {
             0: {
@@ -83,10 +91,19 @@ def predict(payload: PredictionRequest):
             }
         )
 
+        probabilities = {
+            "no_injury_minor": float(proba[0]),
+            "slight_injury": float(proba[1]),
+            "serious_injury": float(proba[2]),
+            "fatal": float(proba[3]),
+        }
+
         return {
             "prediction": prediction,
             "severity": result["label"],
-            "description": result["description"]
+            "description": result["description"],
+            "confidence": confidence,
+            "probabilities": probabilities
         }
 
     except Exception as e:
