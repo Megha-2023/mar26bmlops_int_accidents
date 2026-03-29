@@ -1,6 +1,16 @@
+import sys
+from pathlib import Path
 import pytest
 
+# Add the repository root to Python's import path so tests can import modules
+# like `src.api.model_loader` reliably when pytest runs from the project root.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
+
+# Shared valid payload used across schema and API tests.
+# This avoids duplicating the same large dictionary in multiple test files.
 @pytest.fixture
 def valid_prediction_payload():
     return {
