@@ -6,7 +6,7 @@ stages:
       - src/data/make_dataset.py
     outs:
       - data/preprocessed
-  train:
+  train-track:
     cmd: python src/track_experiment.py
     deps:
       - data/preprocessed
