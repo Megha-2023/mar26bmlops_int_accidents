@@ -1,0 +1,52 @@
+import mlflow 
+import os
+import json
+import joblib
+from datetime import datetime
+from models.train_model import main as train_main
+from models.evaluate_model import evaluate_model
+
+FAST_DEV = os.getenv("FAST_DEV", "false") == "true"
+
+def track_experiment():
+
+    # Connect to the MLflow container
+    mlflow.set_tracking_uri(
+        os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+    )
+    mlflow.set_experiment("Accident_Prediction_Project")
+    run_name = f"v_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+    with mlflow.start_run(run_name=run_name) as run:
+        # Train and Evaluate model
+        train_main()
+        trained_model = evaluate_model()
+
+        # Log metrics from the metrics.json file
+        metrics_path = os.path.join(os.getcwd(), "metrics/metrics.json")
+        if os.path.exists(metrics_path):
+            with open(metrics_path, "r") as file:
+                metrics = json.load(file)
+            mlflow.log_metrics(metrics)
+            print("Metrics Logged to MLflow Successfully !")
+        else:
+            print(f"{metrics_path} not found !")
+
+        # Log model 
+        # model_path = os.path.join(os.getcwd(), "models/xgb_model.pkl")
+        # if os.path.exists(model_path):
+        mlflow.sklearn.log_model(
+            sk_model=trained_model,
+            name="model"
+        )
+        
+        # Register Model to Mlflow Model Registry
+        model_uri = f"runs:/{run.info.run_id}/model"
+        mlflow.register_model(
+            model_uri=model_uri,
+            name="accident_prediction"
+        )
+
+
+if __name__ == "__main__":
+    track_experiment()

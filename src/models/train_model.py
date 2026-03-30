@@ -36,22 +36,6 @@ def main():
     model.fit(X_train, y_train)
 
     # -----------------------------
-    # Predict
-    # -----------------------------
-    y_pred = model.predict(X_test)
-
-    # -----------------------------
-    # Evaluate (same logic as evaluate_model.py)
-    # -----------------------------
-    acc = accuracy_score(y_test, y_pred)
-
-    print("\n Training Evaluation")
-    print("----------------------")
-    print(f"Accuracy: {acc:.4f}")
-    print("\nClassification Report:\n")
-    print(classification_report(y_test, y_pred))
-
-    # -----------------------------
     # Save model
     # -----------------------------
     MODEL_DIR = Path("models")

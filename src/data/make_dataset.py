@@ -10,6 +10,7 @@ def main():
     # -----------------------------
     # 0. Load data
     # -----------------------------
+    print("Loading Data......")
     df = pd.read_csv(DATA_PATH, low_memory=False)
 
     # -----------------------------

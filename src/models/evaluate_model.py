@@ -1,8 +1,10 @@
 import pandas as pd
 import joblib
+import json
+import os
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 
-def main():
+def evaluate_model():
 
     # -----------------------------
     # Load test data
@@ -26,6 +28,18 @@ def main():
     acc = accuracy_score(y_test, preds)
     f1 = f1_score(y_test, preds, average="weighted")
 
+    metrics_path = "metrics"
+    os.makedirs(metrics_path, exist_ok=True)
+
+    metrics = {
+        "Accuracy": f"{acc:.4f}",
+        "F1 Score": f"{f1:.4f}"
+    }
+
+    with open(os.path.join(metrics_path, "metrics.json"), "w") as file:
+        json.dump(metrics, file, indent=4)
+    print("Metrics stored Successfully in a file 'metrics.json' !")
+
     print("\n Evaluation Results")
     print("----------------------")
     print(f"Accuracy: {acc:.4f}")
@@ -33,7 +47,9 @@ def main():
 
     print("\nClassification Report:\n")
     print(classification_report(y_test, preds))
+    
+    return model
 
 
 if __name__ == "__main__":
-    main()
+    model = evaluate_model()
