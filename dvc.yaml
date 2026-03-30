@@ -11,5 +11,7 @@ stages:
     deps:
       - data/preprocessed
       - src/track_experiment.py
+    outs:
+      - models/xgb_model.pkl
     metrics:
       - metrics/metrics.json

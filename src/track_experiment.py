@@ -6,7 +6,6 @@ from datetime import datetime
 from models.train_model import main as train_main
 from models.evaluate_model import evaluate_model
 
-FAST_DEV = os.getenv("FAST_DEV", "false") == "true"
 
 def track_experiment():
 
@@ -15,7 +14,7 @@ def track_experiment():
         os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
     )
     mlflow.set_experiment("Accident_Prediction_Project")
-    run_name = f"v_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_name = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     with mlflow.start_run(run_name=run_name) as run:
         # Train and Evaluate model
