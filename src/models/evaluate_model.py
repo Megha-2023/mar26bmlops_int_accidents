@@ -32,8 +32,8 @@ def evaluate_model():
     os.makedirs(metrics_path, exist_ok=True)
 
     metrics = {
-        "Accuracy": f"{acc:.4f}",
-        "F1 Score": f"{f1:.4f}"
+        "Accuracy": acc,
+        "F1 Score": f1
     }
 
     with open(os.path.join(metrics_path, "metrics.json"), "w") as file:

@@ -3,7 +3,6 @@ import os
 import json
 import joblib
 from datetime import datetime
-from models.train_model import main as train_main
 from models.evaluate_model import evaluate_model
 
 
@@ -17,9 +16,8 @@ def track_experiment():
     run_name = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     with mlflow.start_run(run_name=run_name) as run:
-        # Train and Evaluate model
-        train_main()
-        trained_model = evaluate_model()
+        # Load model
+        trained_model = joblib.load("models/xgb_model.pkl")
 
         # Log metrics from the metrics.json file
         metrics_path = os.path.join(os.getcwd(), "metrics/metrics.json")
@@ -32,8 +30,6 @@ def track_experiment():
             print(f"{metrics_path} not found !")
 
         # Log model 
-        # model_path = os.path.join(os.getcwd(), "models/xgb_model.pkl")
-        # if os.path.exists(model_path):
         mlflow.sklearn.log_model(
             sk_model=trained_model,
             name="model"

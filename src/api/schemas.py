@@ -262,3 +262,45 @@ class PredictionRequest(BaseModel):
             }
         }
     )
+    
+class PredictionResponse(BaseModel):
+    """
+    Output schema for accident severity prediction.
+    """
+
+    prediction: int = Field(
+        ...,
+        description="Predicted severity class as numeric code.",
+        examples=[2]
+    )
+
+    severity: str = Field(
+        ...,
+        description="Human-readable severity label.",
+        examples=["Serious injury"]
+    )
+
+    description: str = Field(
+        ...,
+        description="Explanation of the predicted severity class.",
+        examples=["Predicted as an accident with serious injuries."]
+    )
+
+    confidence: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Confidence score of the predicted class.",
+        examples=[0.82]
+    )
+
+    probabilities: dict[str, float] = Field(
+        ...,
+        description="Probability distribution over all severity classes.",
+        examples=[{
+            "no_injury_minor": 0.05,
+            "slight_injury": 0.10,
+            "serious_injury": 0.82,
+            "fatal": 0.03
+        }]
+    )

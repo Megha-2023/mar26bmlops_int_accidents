@@ -6,12 +6,28 @@ stages:
       - src/data/make_dataset.py
     outs:
       - data/preprocessed
-  train-track:
-    cmd: python src/track_experiment.py
+
+  train:
+    cmd: python src/models/train_model.py
     deps:
       - data/preprocessed
-      - src/track_experiment.py
+      - src/models/train_model.py
     outs:
       - models/xgb_model.pkl
+
+  evaluate:
+    cmd: python src/models/evaluate_model.py
+    deps:
+      - data/preprocessed
+      - models/xgb_model.pkl
+      - src/models/evaluate_model.py
     metrics:
       - metrics/metrics.json
+
+  track:
+    cmd: python src/track_experiment.py
+    deps:
+      - metrics/metrics.json
+      - src/track_experiment.py
+      - models/xgb_model.pkl
+    

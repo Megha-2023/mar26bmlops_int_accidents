@@ -1,13 +1,29 @@
+import logging
+
 from fastapi import FastAPI, HTTPException
 import pandas as pd
 
-from src.api.schemas import PredictionRequest
+from src.api.schemas import PredictionRequest, PredictionResponse
 from src.api.model_loader import load_model
+
+# Configure basic logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Accident Severity Prediction API",
-    description="FastAPI service for serving the trained XGBoost accident model",
-    version="1.0.0",
+    description="FastAPI service for serving the trained XGBoost accident model.",
+    version="1.1.0",
+    openapi_tags=[
+        {
+            "name": "System",
+            "description": "Service health and model metadata endpoints."
+        },
+        {
+            "name": "Inference",
+            "description": "Endpoints used for accident severity prediction."
+        }
+    ]
 )
 
 # Load the model once when the API starts
@@ -21,40 +37,73 @@ MODEL_COLUMNS = [
 ]
 
 
-@app.get("/health")
+@app.get(
+    "/",
+    tags=["System"],
+    summary="Root endpoint",
+    description="Welcome endpoint that provides a quick overview of the API."
+)
+def root():
+    return {
+        "message": "Welcome to the Accident Severity Prediction API",
+        "docs_url": "/docs",
+        "health_endpoint": "/health",
+        "model_info_endpoint": "/model-info",
+        "predict_endpoint": "/predict"
+    }
+
+
+@app.get(
+    "/health",
+    tags=["System"],
+    summary="Health check",
+    description="Returns the running status of the API service."
+)
 def health():
-    """
-    Simple endpoint to verify that the API is running.
-    """
     return {"status": "ok"}
 
 
-@app.get("/model-info")
+@app.get(
+    "/model-info",
+    tags=["System"],
+    summary="Model metadata",
+    description="Returns the expected input features and metadata for the loaded model."
+)
 def model_info():
-    """
-    Return basic information about the loaded model and expected features.
-    """
     return {
+        "model_type": str(type(model)),
         "expected_number_of_features": len(MODEL_COLUMNS),
         "feature_columns": MODEL_COLUMNS,
     }
 
 
-@app.post("/predict")
+@app.post(
+    "/predict",
+    tags=["Inference"],
+    summary="Predict accident severity",
+    description="Takes accident-related features as input and returns the predicted severity class, confidence score, and class probabilities.",
+    response_model=PredictionResponse
+)
 def predict(payload: PredictionRequest):
-    """
-    Make a prediction from a JSON body containing the 24 named features.
-    """
     try:
-        # Export using aliases so "intersection_type" becomes "int"
+        # Export request body using aliases so that
+        # 'intersection_type' becomes 'int'
         payload_dict = payload.model_dump(by_alias=True)
 
+        logger.info(f"Received prediction request: {payload_dict}")
+
+        # Build a one-row DataFrame with the exact feature order expected by the model
         data = pd.DataFrame(
             [[payload_dict[col] for col in MODEL_COLUMNS]],
             columns=MODEL_COLUMNS
         )
 
-        prediction = int(model.predict(data)[0])
+        # Predict probabilities for all classes
+        proba = model.predict_proba(data)[0]
+
+        # Predicted class = index of max probability
+        prediction = int(proba.argmax())
+        confidence = float(max(proba))
 
         severity_map = {
             0: {
@@ -83,11 +132,28 @@ def predict(payload: PredictionRequest):
             }
         )
 
+        probabilities = {
+            "no_injury_minor": float(proba[0]),
+            "slight_injury": float(proba[1]),
+            "serious_injury": float(proba[2]),
+            "fatal": float(proba[3]),
+        }
+
+        logger.info(
+            f"Prediction successful: class={prediction}, confidence={confidence:.4f}"
+        )
+
         return {
             "prediction": prediction,
             "severity": result["label"],
-            "description": result["description"]
+            "description": result["description"],
+            "confidence": confidence,
+            "probabilities": probabilities
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Prediction failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error during prediction"
+        )
