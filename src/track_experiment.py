@@ -18,6 +18,15 @@ def track_experiment():
         # Load model
         trained_model = joblib.load("models/xgb_model.pkl")
 
+        # Load parameters and log
+        if os.path.exists("params.json"):
+            with open("params.json", "r") as file:
+                params = json.load(file)
+            mlflow.log_params(params)
+            print("Parameters logged to MLflow Successfully !")
+        else:
+            print("Parameters file not found !")
+
         # Log metrics from the metrics.json file
         metrics_path = os.path.join(os.getcwd(), "metrics/metrics.json")
         if os.path.exists(metrics_path):

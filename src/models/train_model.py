@@ -2,6 +2,7 @@ import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, classification_report
 import joblib
+import json
 from pathlib import Path
 
 def main():
@@ -35,6 +36,14 @@ def main():
     print("Training Model......")
     model.fit(X_train, y_train)
 
+    # -------------------------------
+    # Save parameters to params.json
+    # -------------------------------
+    params = model.get_params()
+    with open("params.json", "w") as file:
+        json.dump(params, file, indent=4)
+    print("Parameters saved to params.json Successfully !")
+    
     # -----------------------------
     # Save model
     # -----------------------------
