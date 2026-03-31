@@ -1,10 +1,20 @@
+# Core ML + Data
 pandas==2.3.3
+numpy==2.4.3
 scikit-learn==1.8.0
 xgboost==3.2.0
+joblib==1.5.3
+
+# MLOps / Pipeline
 mlflow==3.10.1
 dvc[s3]==3.67.0
+prometheus-client==0.20.0
+python-dotenv==1.2.2
+
+# API
 fastapi==0.135.1
 uvicorn==0.41.0
+httpx==0.28.1
+
+# Testing
 pytest==9.0.2
-joblib==1.5.3
-prometheus-client==0.20.0

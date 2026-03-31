@@ -4,7 +4,7 @@ import json
 import os
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 
-def evaluate_model():
+def main():
 
     # -----------------------------
     # Load test data
@@ -52,4 +52,4 @@ def evaluate_model():
 
 
 if __name__ == "__main__":
-    model = evaluate_model()
+    main()
