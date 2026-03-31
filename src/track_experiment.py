@@ -3,7 +3,6 @@ import os
 import json
 import joblib
 from datetime import datetime
-from models.evaluate_model import evaluate_model
 
 
 def track_experiment():

@@ -9,8 +9,8 @@ stages:
       size: 339334996
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 5ca0dc909fba4c11e5dd39029899ba20
-      size: 3192
+      md5: 060685a1d03e77897aa412477b4004dc
+      size: 3210
     outs:
     - path: data/preprocessed
       hash: md5

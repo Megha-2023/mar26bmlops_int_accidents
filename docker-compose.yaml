@@ -12,9 +12,10 @@ services:
       --backend-store-uri /mlruns
       --default-artifact-root /mlruns
       --serve-artifacts
+      --allowed-hosts '*'
   
   dvc:
-    build: .
+    image: mp/accident-prediction:latest
     container_name: dvc
     working_dir: /app
     command: dvc repro
