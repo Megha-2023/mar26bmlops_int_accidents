@@ -1,52 +1,52 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: python src/make_dataset.py
+    cmd: python src/data/make_dataset.py
     deps:
     - path: data/accidents_full.csv
       hash: md5
       md5: 7438e7e45f79852d81a76966e35043ae
       size: 339334996
-    - path: src/make_dataset.py
+    - path: src/data/make_dataset.py
       hash: md5
-      md5: 411e809a261e7ae7680c573b47642f9f
-      size: 3468
+      md5: 6721923e49459dbb58a3dcd5f72e3051
+      size: 3619
     outs:
     - path: data/preprocessed
       hash: md5
-      md5: 682bfeb3904b6fa79eb2c6595fc56ed8.dir
-      size: 102573430
+      md5: 32d46fa41d1aa39b680c37b6915b30ac.dir
+      size: 104504966
       nfiles: 4
   train:
-    cmd: python src/train_model.py
+    cmd: python src/models/train_model.py
     deps:
     - path: data/preprocessed
       hash: md5
-      md5: 682bfeb3904b6fa79eb2c6595fc56ed8.dir
-      size: 102573430
+      md5: 32d46fa41d1aa39b680c37b6915b30ac.dir
+      size: 104504966
       nfiles: 4
-    - path: src/train_model.py
+    - path: src/models/train_model.py
       hash: md5
-      md5: 60ec13389f5ed6dd3c7022ddb5ac53f3
-      size: 1751
+      md5: 5d49eebe060c73d4a4179af8bdf9bc05
+      size: 1893
     outs:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 357b9b0558310e84e4482ceda18643c4
-      size: 3921802
+      md5: 5be370edc5a6e3c38749e968714b47e1
+      size: 3915929
   evaluate:
-    cmd: python src/evaluate_model.py
+    cmd: python src/models/evaluate_model.py
     deps:
     - path: data/preprocessed
       hash: md5
-      md5: 682bfeb3904b6fa79eb2c6595fc56ed8.dir
-      size: 102573430
+      md5: 32d46fa41d1aa39b680c37b6915b30ac.dir
+      size: 104504966
       nfiles: 4
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 357b9b0558310e84e4482ceda18643c4
-      size: 3921802
-    - path: src/evaluate_model.py
+      md5: 5be370edc5a6e3c38749e968714b47e1
+      size: 3915929
+    - path: src/models/evaluate_model.py
       hash: md5
-      md5: 0df36ca13d84ff3ec8c6d53b38f1be39
-      size: 1064
+      md5: 5eb0391dbea6d31aa1c2af06e6efb51c
+      size: 1103

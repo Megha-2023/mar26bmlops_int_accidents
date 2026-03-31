@@ -9,6 +9,7 @@ def main():
     # -----------------------------
     # Load data
     # -----------------------------
+    print("Loading processsed data.....")
     X_train = pd.read_csv("data/preprocessed/X_train.csv")
     X_test  = pd.read_csv("data/preprocessed/X_test.csv")
 
@@ -31,6 +32,7 @@ def main():
     # -----------------------------
     # Train
     # -----------------------------
+    print("Training Model......")
     model.fit(X_train, y_train)
 
     # -----------------------------

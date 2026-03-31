@@ -50,8 +50,8 @@ Train : 2010 — 2015
 Test  : 2016
 
 ## Why?
-1. Column structures changed in 2019 
-2. Avoid data leakage 
+1. Column structures changed in 2019
+2. Avoid data leakage
 3. Simulates real future prediction
 
 Because in real life:
@@ -141,5 +141,9 @@ Current baseline results:
 - Automated execution dvc repro
 - Separation of data, code, and models
 
+## Author - 3 : Megha PANCHAL
 
+### Experiment Tracking (MLflow)
+
+### Microservice Design (Docker)
 
