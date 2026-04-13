@@ -29,9 +29,9 @@ def generate_data_drift_report(
         Path to the generated HTML report.
     """
     report = Report([DataDriftPreset()])
-    my_eval = report.run(reference_data, current_data)
+    evaluation = report.run(reference_data, current_data)
 
     output_path = get_reports_dir() / report_name
-    my_eval.save_html(str(output_path))
+    evaluation.save_html(str(output_path))
 
     return output_path
