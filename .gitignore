@@ -212,3 +212,4 @@ data/accidents_full.csv
 data/preprocessed/
 models/
 non_sync/
+reports/
