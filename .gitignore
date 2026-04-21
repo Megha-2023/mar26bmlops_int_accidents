@@ -213,3 +213,8 @@ data/preprocessed/
 models/
 non_sync/
 reports/
+data/caracteristiques/
+data/lieux/
+data/usagers/
+data/vehicules/
+data/processed/
