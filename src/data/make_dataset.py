@@ -3,8 +3,8 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.impute import SimpleImputer
 from pathlib import Path
 
-DATA_PATH = "data/accidents_full.csv"
-OUTPUT_DIR = Path("data/preprocessed")
+DEFAULT_DATA_PATH = "data/accidents_full.csv"
+DEFAULT_OUTPUT_DIR = Path("data/preprocessed")
 CHUNK_SIZE = 100_000
 
 FEATURES = [
@@ -48,12 +48,16 @@ def process_chunk(chunk):
 # -----------------------------
 # Main processing
 # -----------------------------
-def main():
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+def make_dataset(
+        data_path=DEFAULT_DATA_PATH,
+        output_path=DEFAULT_OUTPUT_DIR
+):
+    output_dir = Path(output_path)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     print("Loading and processing data in chunks...")
     chunks = []
-    for chunk in pd.read_csv(DATA_PATH, chunksize=CHUNK_SIZE, dtype=dtype_dict, low_memory=False):
+    for chunk in pd.read_csv(data_path, chunksize=CHUNK_SIZE, dtype=dtype_dict, low_memory=False):
         chunks.append(process_chunk(chunk))
 
     df = pd.concat(chunks, ignore_index=True)
@@ -82,13 +86,20 @@ def main():
     X_test[:] = imputer.transform(X_test)
 
     print("Saving processed Data to files.......")
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    X_train.to_csv(OUTPUT_DIR / "X_train.csv", index=False)
-    X_test.to_csv(OUTPUT_DIR / "X_test.csv", index=False)
-    y_train.to_csv(OUTPUT_DIR / "y_train.csv", index=False)
-    y_test.to_csv(OUTPUT_DIR / "y_test.csv", index=False)
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    X_train.to_csv(output_dir / "X_train.csv", index=False)
+    X_test.to_csv(output_dir / "X_test.csv", index=False)
+    y_train.to_csv(output_dir / "y_train.csv", index=False)
+    y_test.to_csv(output_dir / "y_test.csv", index=False)
 
-    print("Dataset prepared successfully!")
+    print(f"Dataset saved to {output_dir} - train: {X_train.shape}, test: {X_test.shape}")
+
+    # Return summary so DAG can push to XCom
+    return {
+        "train_rows": len(X_train),
+        "test_rows": len(X_test),
+        "features": len(X_train.columns)
+    }
 
 if __name__ == "__main__":
-    main()
+    make_dataset()
