@@ -217,4 +217,5 @@ data/caracteristiques/
 data/lieux/
 data/usagers/
 data/vehicules/
-data/processed/
+data/processed/*
+!data/processed/*.dvc
