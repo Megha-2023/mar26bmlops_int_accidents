@@ -30,7 +30,6 @@ The dataset is based on official French road accident data and includes:
 
 Final merged dataset: data/accidents_full.csv
 
-
 target variable will usually come from usagers.grav (severity).
 
 # train/test split idea
