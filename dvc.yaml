@@ -1,33 +1,44 @@
+# dvc.yaml
 stages:
-  prepare:
+  make_dataset:
     cmd: python src/data/make_dataset.py
     deps:
-      - data/accidents_full.csv
       - src/data/make_dataset.py
+      - data/accidents_full.csv
     outs:
-      - data/preprocessed
+      - data/preprocessed/X_train.csv
+      - data/preprocessed/X_test.csv
+      - data/preprocessed/y_train.csv
+      - data/preprocessed/y_test.csv
 
-  train:
+  validate_data:
+    cmd: python src/data/validate_data.py
+    deps:
+      - src/data/validate_data.py
+      - data/preprocessed/X_train.csv
+
+  train_model:
     cmd: python src/models/train_model.py
     deps:
-      - data/preprocessed
       - src/models/train_model.py
+      - data/preprocessed/X_train.csv
+      - data/preprocessed/y_train.csv
     outs:
       - models/xgb_model.pkl
-
-  evaluate:
+       
+  evaluate_model:
     cmd: python src/models/evaluate_model.py
     deps:
-      - data/preprocessed
-      - models/xgb_model.pkl
       - src/models/evaluate_model.py
+      - models/xgb_model.pkl
+      - data/preprocessed/X_test.csv
     metrics:
-      - metrics/metrics.json
+      - metrics/metrics.json:
+          cache: false
 
-  track:
+  track_experiment:
     cmd: python src/track_experiment.py
     deps:
-      - metrics/metrics.json
       - src/track_experiment.py
       - models/xgb_model.pkl
-    
+      - metrics/metrics.json

@@ -12,8 +12,9 @@ def track_experiment(
         model_path="models/xgb_model.pkl",
         params_path="params.json",
         metrics_path="metrics/metrics.json",
+        plots_path="metrics/plots",
         mlflow_uri=DEFAULT_MLFLOW_URI,
-        experiment_name="Accident_Prediction_Project"
+        experiment_name="Accident_Prediction_Project",
 ):
 
     model_path = Path(model_path)
@@ -47,7 +48,7 @@ def track_experiment(
         else:
             print("Parameter file params.json not found !")
 
-        # Log metrics from the metrics.json file
+        # Log Scalar Metrics from the metrics.json file
         if os.path.exists(metrics_path):
             with open(metrics_path, "r", encoding='utf-8-sig') as file:
                 metrics = json.load(file)
@@ -61,6 +62,13 @@ def track_experiment(
         if report_path.exists():
             mlflow.log_artifact(str(report_path), artifact_path="reports")
             print("Classification Report logged to MLflow Successfully!")
+        
+        # Log plots as artifacts
+        for plot_file in ["confusion_matrix.png", "roc_curve.png"]:
+            plot_full_path = os.path.join(plots_path, plot_file)
+            if os.path.exists(plot_full_path):
+                mlflow.log_artifact(plot_full_path, artifact_path="plots")
+                print(f"Plots logged Successfully!")
         
         # Log model artifact
         trained_model = joblib.load(model_path)

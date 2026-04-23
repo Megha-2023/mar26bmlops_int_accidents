@@ -15,7 +15,7 @@ services:
       --allowed-hosts '*'
   
   dvc:
-    image: mp/accident-prediction:latest
+    image: accident-prediction:latest
     container_name: dvc
     working_dir: /app
     command: dvc repro
@@ -25,7 +25,7 @@ services:
       - mlflow
 
   api:
-    image: mp/accident-prediction:latest
+    image: accident-prediction:latest
     container_name: api
     working_dir: /app
     command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
