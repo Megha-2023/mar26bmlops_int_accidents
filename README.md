@@ -47,37 +47,6 @@ Test  : 2016
 Because in real life:
 model learns from past - predicts future
 
-
-## ML Pipeline (DVC)
-
-The project pipeline is fully managed using DVC:
-
-### 1. Prepare Stage
-- Loads raw datasets
-- Cleans and merges data
-- Creates train/test split
-
-Output: data/preprocessed/
-
-
----
-
-
-### 2. Train Stage
-- Trains an XGBoost classifier
-- Saves trained model
-
-Output: models/xgb_model.pkl
-
-
----
-
-### 3. Evaluate Stage
-- Evaluates model performance
-- Prints metrics (Accuracy, F1-score, Classification Report)
-
----
-
 ### Model Performance
 
 Current baseline results:
