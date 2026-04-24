@@ -38,8 +38,8 @@ services:
     command: >
       mlflow server
       --host 0.0.0.0
-      --backend-store-uri /mlruns
-      --default-artifact-root /mlruns
+      --backend-store-uri sqlite:////mlruns/mlflow.db
+      --artifacts-destination /mlruns
       --serve-artifacts
       --allowed-hosts '*'
   
