@@ -6,14 +6,43 @@ import json
 import os
 from pathlib import Path
 
+
+def model_is_up_to_date(model_path, training_files):
+    if not model_path.exists():
+        return False
+
+    model_mtime = model_path.stat().st_mtime
+    return all(path.exists() and model_mtime >= path.stat().st_mtime for path in training_files)
+
+
+def count_csv_rows(path):
+    with open(path, "r", encoding="utf-8") as file:
+        return max(sum(1 for _ in file) - 1, 0)
+
+
 def train_model(
         data_path="data/preprocessed",
         model_path="models/xgb_model.pkl",
-        params_path="params.json"
+        params_path="params.json",
+        force=False
 ):
 
     data_path = Path(data_path)
     model_path = Path(model_path)
+    params_path = Path(params_path)
+    training_files = [data_path / "X_train.csv", data_path / "y_train.csv"]
+
+    if not force and model_is_up_to_date(model_path, training_files):
+        print(f"Model already exists at {model_path}. Skipping training.")
+        X_train_sample = pd.read_csv(data_path / "X_train.csv", nrows=1)
+        return {
+            "model_path": str(model_path),
+            "params_path": str(params_path),
+            "train_rows": count_csv_rows(data_path / "X_train.csv"),
+            "features": len(X_train_sample.columns),
+            "skipped": True,
+        }
+
     # -----------------------------
     # Load data
     # -----------------------------
@@ -34,13 +63,15 @@ def train_model(
         override = {}
 
     default_params = {
-        "n_estimators":    200,
-        "learning_rate":   0.05,
-        "max_depth":       6,
+        "n_estimators":    100,
+        "learning_rate":   0.1,
+        "max_depth":       4,
         "subsample":       0.8,
         "colsample_bytree": 0.8,
         "eval_metric":     "logloss",
         "random_state":    42,
+        "tree_method": "hist",
+        "n_jobs": -1,
     }
 
     # override defaults with anything in params.json
@@ -75,9 +106,9 @@ def train_model(
         "params_path": str(params_path),
         "train_rows":  len(X_train),
         "features":    len(X_train.columns),
+        "skipped": False,
     }
 
 
 if __name__ == "__main__":
     train_model()
-

@@ -13,6 +13,8 @@ from sklearn.metrics import (
 
 def plot_roc_curve(y_test, probs, plots_path):
     """ Function defined to plot roc curve for multiclass use one-vs-test """
+    plots_path = Path(plots_path)
+    plots_path.mkdir(parents=True, exist_ok=True)
 
     classes = sorted(y_test.unique())
     y_bin = label_binarize(y_test, classes=classes)
@@ -30,7 +32,7 @@ def plot_roc_curve(y_test, probs, plots_path):
     ax.set_title("ROC Curve (onv-vs-rest)")
     ax.legend(loc="lower right")
     plt.tight_layout()
-    plt.savefig(Path(plots_path) / "roc_curve.png")
+    plt.savefig(plots_path / "roc_curve.png")
     plt.close()
     print("ROC curve saved.")
 
@@ -45,6 +47,7 @@ def evaluate_model(
     data_path = Path(data_path)
     model_path = Path(model_path)
     metrics_path = Path(metrics_path)
+    plots_path = Path(plots_path)
 
     # -----------------------------
     # Load test data
@@ -87,9 +90,9 @@ def evaluate_model(
     class_report = classification_report(y_test, preds)
 
     # Confusion matrix → image artifact
-    os.makedirs(plots_path, exist_ok=True)
+    plots_path.mkdir(parents=True, exist_ok=True)
 
-    cm_path = os.path.join(plots_path, "confusion_matrix.png")
+    cm_path = plots_path / "confusion_matrix.png"
     fig, ax = plt.subplots(figsize=(6, 5))
     ConfusionMatrixDisplay.from_predictions(y_test, preds, ax=ax)
     ax.set_title("Confusion Matrix")
@@ -120,6 +123,8 @@ def evaluate_model(
     return {
         "model_path":  str(model_path),
         "metrics_path": str(metrics_path),
+        "plots_path": str(plots_path),
+        "roc_auc": metrics["roc_auc"],
         "test_rows":  len(X_test),
         "features":    len(X_test.columns),
     }
@@ -127,4 +132,3 @@ def evaluate_model(
 
 if __name__ == "__main__":
     evaluate_model()
-

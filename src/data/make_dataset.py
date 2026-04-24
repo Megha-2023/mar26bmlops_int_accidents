@@ -6,6 +6,11 @@ from pathlib import Path
 DEFAULT_DATA_PATH = "data/accidents_full.csv"
 DEFAULT_OUTPUT_DIR = Path("data/preprocessed")
 CHUNK_SIZE = 100_000
+REQUIRED_SOURCE_COLUMNS = [
+    "an", "mois", "jour", "hrmn", "lum", "int", "atm", "col", "catr", "circ",
+    "nbv", "vosp", "surf", "infra", "situ", "lat", "long", "place", "catu",
+    "sexe", "locp", "actp", "etatp", "catv", "an_nais", "grav"
+]
 
 FEATURES = [
     "an","mois","jour","hour","lum","int","atm","col","catr","circ","nbv","vosp",
@@ -26,9 +31,29 @@ dtype_dict = {
 def fix_year(x):
     return x + 2000 if x < 100 else x
 
+
+def count_csv_rows(path):
+    with open(path, "r", encoding="utf-8") as file:
+        return max(sum(1 for _ in file) - 1, 0)
+
+
+def outputs_are_up_to_date(data_path, output_dir):
+    expected_files = [
+        output_dir / "X_train.csv",
+        output_dir / "X_test.csv",
+        output_dir / "y_train.csv",
+        output_dir / "y_test.csv",
+    ]
+    if not all(path.exists() for path in expected_files):
+        return False
+
+    source_mtime = Path(data_path).stat().st_mtime
+    return all(path.stat().st_mtime >= source_mtime for path in expected_files)
+
 def process_chunk(chunk):
     # Fix year
-    chunk.loc[:, "an"] = chunk["an"].apply(fix_year)
+    chunk["an"] = pd.to_numeric(chunk["an"], errors="coerce")
+    chunk["an"] = chunk["an"].where(chunk["an"] >= 100, chunk["an"] + 2000)
     
     # Filter years
     chunk = chunk.loc[chunk["an"].between(2010, 2016)].copy()
@@ -38,6 +63,7 @@ def process_chunk(chunk):
     chunk["hour"] = (chunk["hrmn"] // 100).fillna(0).astype(int)
     
     # Add victime age
+    chunk["an_nais"] = pd.to_numeric(chunk["an_nais"], errors="coerce")
     chunk["victim_age"] = chunk["an"] - chunk["an_nais"]
     chunk = chunk.loc[chunk["victim_age"].between(0, 100)].copy()
     
@@ -50,20 +76,39 @@ def process_chunk(chunk):
 # -----------------------------
 def make_dataset(
         data_path=DEFAULT_DATA_PATH,
-        output_path=DEFAULT_OUTPUT_DIR
+        output_path=DEFAULT_OUTPUT_DIR,
+        force=False
 ):
+    data_path = Path(data_path)
     output_dir = Path(output_path)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    if not force and outputs_are_up_to_date(data_path, output_dir):
+        print(f"Processed dataset already exists in {output_dir}. Skipping preprocessing.")
+        X_train_sample = pd.read_csv(output_dir / "X_train.csv", nrows=1)
+        return {
+            "train_rows": count_csv_rows(output_dir / "X_train.csv"),
+            "test_rows": count_csv_rows(output_dir / "X_test.csv"),
+            "features": len(X_train_sample.columns),
+            "skipped": True,
+        }
+
     print("Loading and processing data in chunks...")
-    chunks = []
-    for chunk in pd.read_csv(data_path, chunksize=CHUNK_SIZE, dtype=dtype_dict, low_memory=False):
-        chunks.append(process_chunk(chunk))
+    train_chunks = []
+    test_chunks = []
+    for chunk in pd.read_csv(
+        data_path,
+        usecols=REQUIRED_SOURCE_COLUMNS,
+        chunksize=CHUNK_SIZE,
+        dtype=dtype_dict,
+        low_memory=False
+    ):
+        processed = process_chunk(chunk)
+        train_chunks.append(processed.loc[processed["an"].between(2010, 2015)])
+        test_chunks.append(processed.loc[processed["an"] == 2016])
 
-    df = pd.concat(chunks, ignore_index=True)
-
-    train = df[df["an"].between(2010, 2015)]
-    test = df[df["an"] == 2016]
+    train = pd.concat(train_chunks, ignore_index=True)
+    test = pd.concat(test_chunks, ignore_index=True)
 
     y_train = train["grav"] - 1
     y_test = test["grav"] - 1
@@ -98,7 +143,8 @@ def make_dataset(
     return {
         "train_rows": len(X_train),
         "test_rows": len(X_test),
-        "features": len(X_train.columns)
+        "features": len(X_train.columns),
+        "skipped": False,
     }
 
 if __name__ == "__main__":
