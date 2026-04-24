@@ -1,0 +1,54 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlruns
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --backend-store-uri /mlruns
+      --default-artifact-root /mlruns
+      --serve-artifacts
+      --allowed-hosts '*'
+  
+  dvc:
+    image: accident-prediction:latest
+    container_name: dvc
+    working_dir: /app
+    command: dvc repro
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+
+  api:
+    image: accident-prediction:latest
+    container_name: api
+    working_dir: /app
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+      - dvc
+
+  nginx:
+    build:
+      context: deployments/nginx/
+      dockerfile: Dockerfile
+    container_name: nginx_revproxy
+    ports:
+      - "8080:443"
+    volumes:
+      - ./deployments/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployments/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+
+volumes:
+  mlflow_data:
+
+ 

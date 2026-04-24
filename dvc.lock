@@ -9,44 +9,179 @@ stages:
       size: 339334996
     - path: src/data/make_dataset.py
       hash: md5
-      md5: 6721923e49459dbb58a3dcd5f72e3051
-      size: 3619
+      md5: 060685a1d03e77897aa412477b4004dc
+      size: 3210
     outs:
     - path: data/preprocessed
       hash: md5
-      md5: 32d46fa41d1aa39b680c37b6915b30ac.dir
-      size: 104504966
+      md5: e340991d75ccaae634dcc19429770d0e.dir
+      size: 98761426
       nfiles: 4
   train:
     cmd: python src/models/train_model.py
     deps:
     - path: data/preprocessed
       hash: md5
-      md5: 32d46fa41d1aa39b680c37b6915b30ac.dir
-      size: 104504966
+      md5: e340991d75ccaae634dcc19429770d0e.dir
+      size: 98761426
       nfiles: 4
     - path: src/models/train_model.py
       hash: md5
-      md5: 5d49eebe060c73d4a4179af8bdf9bc05
-      size: 1893
+      md5: 92ade431f5a204bf68b323c021f07450
+      size: 1346
     outs:
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 5be370edc5a6e3c38749e968714b47e1
-      size: 3915929
+      md5: e85a949f2b38e651ae3016336a917d63
+      size: 3928043
   evaluate:
     cmd: python src/models/evaluate_model.py
     deps:
     - path: data/preprocessed
       hash: md5
-      md5: 32d46fa41d1aa39b680c37b6915b30ac.dir
-      size: 104504966
+      md5: e340991d75ccaae634dcc19429770d0e.dir
+      size: 98761426
       nfiles: 4
     - path: models/xgb_model.pkl
       hash: md5
-      md5: 5be370edc5a6e3c38749e968714b47e1
-      size: 3915929
+      md5: e85a949f2b38e651ae3016336a917d63
+      size: 3928043
     - path: src/models/evaluate_model.py
       hash: md5
-      md5: 5eb0391dbea6d31aa1c2af06e6efb51c
-      size: 1103
+      md5: 587cc3bcf6879a192c474da9e6e53d2b
+      size: 1466
+    outs:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: d65d6fbbfe068b852891c6547951d35b
+      size: 74
+  train-track:
+    cmd: python src/track_experiment.py
+    deps:
+    - path: data/preprocessed
+      hash: md5
+      md5: 95a0541d794652410af78db773ec93f6.dir
+      size: 102573552
+      nfiles: 4
+    - path: src/track_experiment.py
+      hash: md5
+      md5: a26e0141f414b72c698d09b61f2b2dd1
+      size: 1555
+    outs:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: 8d9b77a637b9a971559e7cf78e046c74
+      size: 54
+    - path: models/xgb_model.pkl
+      hash: md5
+      md5: cf3a3b784d1c3533fa9163bc0af5c536
+      size: 3919347
+  track:
+    cmd: python src/track_experiment.py
+    deps:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: d65d6fbbfe068b852891c6547951d35b
+      size: 74
+    - path: models/xgb_model.pkl
+      hash: md5
+      md5: e85a949f2b38e651ae3016336a917d63
+      size: 3928043
+    - path: src/track_experiment.py
+      hash: md5
+      md5: d0fb056378cbaea8d30acddda3d14734
+      size: 1377
+  make_dataset:
+    cmd: python src/data/make_dataset.py
+    deps:
+    - path: data/accidents_full.csv
+      hash: md5
+      md5: 7438e7e45f79852d81a76966e35043ae
+      size: 339334996
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: df5819d814b58419f40d14f90454c9c7
+      size: 3597
+    outs:
+    - path: data/preprocessed/X_test.csv
+      hash: md5
+      md5: e6e191ea9f3cd5bac3a9e50c45314bdd
+      size: 13377391
+    - path: data/preprocessed/X_train.csv
+      hash: md5
+      md5: d2f8bc7234a79cc6e8d24248de0099ea
+      size: 83460207
+    - path: data/preprocessed/y_test.csv
+      hash: md5
+      md5: 07c3ece33aed1a6752c4e26c4c72dd63
+      size: 266779
+    - path: data/preprocessed/y_train.csv
+      hash: md5
+      md5: 4fc8d58e680e0aafab69919aebd735dc
+      size: 1664763
+  validate_data:
+    cmd: python src/data/validate_data.py
+    deps:
+    - path: data/preprocessed/X_train.csv
+      hash: md5
+      md5: d2f8bc7234a79cc6e8d24248de0099ea
+      size: 83460207
+    - path: src/data/validate_data.py
+      hash: md5
+      md5: faec6424c77b2b66bbc2f2843c73dd8a
+      size: 3121
+  train_model:
+    cmd: python src/models/train_model.py
+    deps:
+    - path: data/preprocessed/X_train.csv
+      hash: md5
+      md5: d2f8bc7234a79cc6e8d24248de0099ea
+      size: 83460207
+    - path: data/preprocessed/y_train.csv
+      hash: md5
+      md5: 4fc8d58e680e0aafab69919aebd735dc
+      size: 1664763
+    - path: src/models/train_model.py
+      hash: md5
+      md5: 037a62d5d118735f6dfcbce962f29d89
+      size: 2349
+    outs:
+    - path: models/xgb_model.pkl
+      hash: md5
+      md5: b2db2637fc88b029671c7307ac17f11d
+      size: 3928451
+  evaluate_model:
+    cmd: python src/models/evaluate_model.py
+    deps:
+    - path: data/preprocessed/X_test.csv
+      hash: md5
+      md5: e6e191ea9f3cd5bac3a9e50c45314bdd
+      size: 13377391
+    - path: models/xgb_model.pkl
+      hash: md5
+      md5: b2db2637fc88b029671c7307ac17f11d
+      size: 3928451
+    - path: src/models/evaluate_model.py
+      hash: md5
+      md5: 46dff97e28c15d1eeb18bdd416d245de
+      size: 3967
+    outs:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: c34679fc7eb2b932b75786a2e84f972c
+      size: 73
+  track_experiment:
+    cmd: python src/track_experiment.py
+    deps:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: c34679fc7eb2b932b75786a2e84f972c
+      size: 73
+    - path: models/xgb_model.pkl
+      hash: md5
+      md5: b2db2637fc88b029671c7307ac17f11d
+      size: 3928451
+    - path: src/track_experiment.py
+      hash: md5
+      md5: 9dd8b0ed357e1e13305a2108c5531e3d
+      size: 3718

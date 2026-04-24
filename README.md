@@ -1,22 +1,11 @@
-# mar26bmlops_int_accidents
-The objective of this project is to try to predict the severity of road accidents in France. Predictions will be based on historical data from 2005 to 2020.
+# Road Accident Prediction in France
+This project is an end-to-end Machine Learning pipeline for analyzing and predicting road accident patterns in France using structured national accident data.
 
 ## Objective:
 
-Predict the severity of road accidents in France using historical data. Severity can include whether there were injuries, hospitalizations, or fatalities. The predictions will help identify high-risk zones considering meteorology, geography, and accident patterns.
+The objective of this project is to try to predict the severity of road accidents in France. Predictions will be based on historical data from 2005 to 2020.
+Severity can include whether there were injuries, hospitalizations, or fatalities. The predictions will help identify high-risk zones considering meteorology, geography, and accident patterns.
 
-## Author part 1
-### Mohammad Reza Nilchiyan 
-
-MLOps Learning Project – March 2026
-
-# Road Accidents in France – MLOps Project (DVC + ML Pipeline)
-
-This project is an end-to-end Machine Learning pipeline for analyzing and predicting road accident patterns in France using structured national accident data.
-
-The project follows **MLOps best practices** using **DVC for pipeline versioning** and reproducibility.
-
----
 
 # Project Goal
 
@@ -56,9 +45,6 @@ Test  : 2016
 
 Because in real life:
 model learns from past - predicts future
-
-* This is a very good ML practice.
-Also I, reduce the dataset + features safely.(Feature Engineering solution)
 
 
 mar26bmlops_int_accidents/
@@ -140,10 +126,3 @@ Current baseline results:
 - Dependency tracking
 - Automated execution dvc repro
 - Separation of data, code, and models
-
-## Author - 3 : Megha PANCHAL
-
-### Experiment Tracking (MLflow)
-
-### Microservice Design (Docker)
-
