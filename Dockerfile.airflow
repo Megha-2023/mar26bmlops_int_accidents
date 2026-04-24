@@ -1,0 +1,7 @@
+FROM apache/airflow:2.7.2
+
+# Copy requirements.txt
+COPY requirements.airflow.txt .
+
+# Install all dependenices
+RUN pip install --no-cache-dir -r requirements.airflow.txt

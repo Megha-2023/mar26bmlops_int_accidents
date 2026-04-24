@@ -120,14 +120,7 @@ def evaluate_model(
 
     print("\nClassification Report:\n")
     print(class_report)
-    return {
-        "model_path":  str(model_path),
-        "metrics_path": str(metrics_path),
-        "plots_path": str(plots_path),
-        "roc_auc": metrics["roc_auc"],
-        "test_rows":  len(X_test),
-        "features":    len(X_test.columns),
-    }
+    return metrics
 
 
 if __name__ == "__main__":

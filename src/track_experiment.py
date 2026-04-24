@@ -8,6 +8,28 @@ from datetime import datetime
 
 
 DEFAULT_MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+
+
+def get_or_create_experiment(client, experiment_name):
+    experiment = client.get_experiment_by_name(experiment_name)
+    if experiment is None:
+        experiment_id = client.create_experiment(
+            name=experiment_name,
+            artifact_location="mlflow-artifacts:/",
+        )
+        print(f"Created MLflow experiment '{experiment_name}' with proxied artifacts.")
+        return experiment_id
+
+    if experiment.artifact_location.startswith("/"):
+        raise RuntimeError(
+            f"Experiment '{experiment_name}' uses local artifact path "
+            f"'{experiment.artifact_location}', which is not writable from Airflow. "
+            "Delete and recreate this experiment, or use a new experiment name."
+        )
+
+    return experiment.experiment_id
+
+
 def track_experiment(
         model_path="models/xgb_model.pkl",
         params_path="params.json",
@@ -22,13 +44,12 @@ def track_experiment(
 
     # Connect to the MLflow container
     mlflow.set_tracking_uri(mlflow_uri)
-    mlflow.set_experiment(experiment_name)
+    client = MlflowClient()
+    experiment_id = get_or_create_experiment(client, experiment_name)
     run_name = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-    client = MlflowClient()
-
     # Log params, metrics and model artifact
-    with mlflow.start_run(run_name=run_name) as run:
+    with mlflow.start_run(experiment_id=experiment_id, run_name=run_name) as run:
         run_id = run.info.run_id
 
         # Load parameters and log

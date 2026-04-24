@@ -25,5 +25,5 @@ httpx==0.28.1
 # Testing
 pytest==9.0.2
 
-# Orchestration
-apache-airflow==3.2.1
+# Monitoring
+evidently==0.7.12

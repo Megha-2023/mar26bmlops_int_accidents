@@ -30,7 +30,6 @@ The dataset is based on official French road accident data and includes:
 
 Final merged dataset: data/accidents_full.csv
 
-
 target variable will usually come from usagers.grav (severity).
 
 # train/test split idea
@@ -41,41 +40,12 @@ Test  : 2016
 ## Why?
 1. Column structures changed in 2019
 2. Avoid data leakage
+1. Column structures changed in 2019
+2. Avoid data leakage
 3. Simulates real future prediction
 
 Because in real life:
 model learns from past - predicts future
-
-
-mar26bmlops_int_accidents/
-
-│
-├── data/
-│   ├   data/ │     
-│   ├── caracteristiques/
-│   ├── usagers/
-│   ├── lieux/
-│   ├── vehicules/                   
-│   └── accidents_full.csv     merged dataset
-│   └── preprocessed/
-│               ├── X_train.csv
-│               ├── X_test.csv
-│               ├── y_train.csv
-│               └── y_test.csv
-│
-├── src/
-│   ├
-│   └── make_dataset.py       (clean + split + feature engineering)
-│   └── train_model.py
-│   │    
-│   └── evaluate_model.py      (metrics only) (directly inside src)
-│
-├── models/
-│         └── model.pkl                  (later)
-├── dvc.yaml                               (later)
-├── README.md
-├── requirements.txt
-
 
 
 ## ML Pipeline (DVC)
@@ -115,7 +85,7 @@ Current baseline results:
 - Accuracy: ~0.61
 - F1-score: ~0.59
 
-# Note: Class imbalance affects minority class prediction performance.
+**Note**: Class imbalance affects minority class prediction performance.
 
 ---
 
