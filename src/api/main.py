@@ -3,8 +3,8 @@ import logging
 from fastapi import FastAPI, HTTPException
 import pandas as pd
 
-from src.api.schemas import PredictionRequest, PredictionResponse
-from src.api.model_loader import load_model
+from .schemas import PredictionRequest, PredictionResponse
+from .model_loader import load_model
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)

@@ -85,7 +85,7 @@ Current baseline results:
 - Accuracy: ~0.61
 - F1-score: ~0.59
 
-# Note: Class imbalance affects minority class prediction performance.
+**Note**: Class imbalance affects minority class prediction performance.
 
 ---
 

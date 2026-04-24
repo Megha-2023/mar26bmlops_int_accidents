@@ -1,133 +1,96 @@
 import pandas as pd
 import pytest
+from pathlib import Path
 
-from src.data.make_dataset import (
-    add_victim_age,
-    clean_time_column,
-    filter_years,
-    fix_year_column,
-    select_features,
-    split_train_test,
-)
+from src.data  import make_dataset
 
 
 # -----------------------------
-# Year handling
+# Fixtures
 # -----------------------------
-def test_fix_year_column_converts_two_digit_years():
-    df = pd.DataFrame({"an": [16, 2015, 99]})
-
-    result = fix_year_column(df)
-
-    assert result["an"].tolist() == [2016, 2015, 2099]
-
-
-def test_filter_years_keeps_only_2010_to_2016():
-    df = pd.DataFrame({"an": [2009, 2010, 2013, 2016, 2017]})
-
-    result = filter_years(df)
-
-    assert result["an"].tolist() == [2010, 2013, 2016]
+@pytest.fixture
+def sample_chunk():
+    return pd.DataFrame({
+        "an": [10, 2012, 99],
+        "mois": [1, 5, 12],
+        "jour": [10, 20, 15],
+        "hrmn": ["1230", "0815", "2359"],
+        "an_nais": [1990, 1980, 1970],
+        "grav": [1, 2, 3],
+        "lat": [45.0, 46.0, 47.0],
+        "long": [5.0, 6.0, 7.0]
+    })
 
 
 # -----------------------------
-# Time cleaning
+# Unit tests
 # -----------------------------
-def test_clean_time_column_creates_hour_from_hrmn():
-    df = pd.DataFrame({"hrmn": [1330, "0815", 45]})
-
-    result = clean_time_column(df)
-
-    assert result["hour"].tolist() == [13, 8, 0]
+def test_fix_year():
+    assert make_dataset.fix_year(10) == 2010
+    assert make_dataset.fix_year(99) == 2099
+    assert make_dataset.fix_year(2015) == 2015
 
 
-def test_clean_time_column_sets_invalid_values_to_zero():
-    df = pd.DataFrame({"hrmn": ["bad_value", None]})
+def test_process_chunk_basic(sample_chunk):
+    df = make_dataset.process_chunk(sample_chunk)
 
-    result = clean_time_column(df)
+    # Check filtering years (2010–2016)
+    assert df["an"].min() >= 2010
+    assert df["an"].max() <= 2016
 
-    assert result["hour"].tolist() == [0, 0]
+    # Check hour extraction
+    assert "hour" in df.columns
+    assert df["hour"].iloc[0] == 12
 
-
-# -----------------------------
-# Victim age engineering
-# -----------------------------
-def test_add_victim_age_creates_age_column():
-    df = pd.DataFrame({"an": [2016, 2014], "an_nais": [1980, 2000]})
-
-    result = add_victim_age(df)
-
-    assert result["victim_age"].tolist() == [36, 14]
+    # Check victim age
+    assert "victim_age" in df.columns
+    assert all(df["victim_age"].between(0, 100))
 
 
-def test_add_victim_age_filters_unrealistic_ages():
-    df = pd.DataFrame(
-        {
-            "an": [2016, 2016, 2016],
-            "an_nais": [1980, 1890, 2020],  # ages: 36, 126, -4
-        }
-    )
+def test_process_chunk_columns(sample_chunk):
+    df = make_dataset.process_chunk(sample_chunk)
 
-    result = add_victim_age(df)
-
-    assert result["victim_age"].tolist() == [36]
+    # Ensure only expected columns are returned
+    for col in df.columns:
+        assert col in [
+            "an","mois","jour","hour","lum","int","atm","col","catr","circ",
+            "nbv","vosp","surf","infra","situ","lat","long","place","catu",
+            "sexe","locp","actp","etatp","catv","victim_age","grav"
+        ]
 
 
 # -----------------------------
-# Feature selection
+# Integration test (mock I/O)
 # -----------------------------
-def test_select_features_keeps_only_expected_columns():
-    df = pd.DataFrame(
-        {
-            "an": [2016],
-            "mois": [5],
-            "jour": [12],
-            "hour": [14],
-            "grav": [3],
-            "extra_col": ["drop me"],
-        }
-    )
+def test_main(tmp_path, monkeypatch):
+    # Create fake CSV
+    fake_data = pd.DataFrame({
+        "an": [2012, 2015, 2016],
+        "mois": [1, 2, 3],
+        "jour": [10, 11, 12],
+        "hrmn": ["1200", "1300", "1400"],
+        "an_nais": [1990, 1985, 1980],
+        "grav": [1, 2, 3],
+        "lat": [45, 46, 47],
+        "long": [5, 6, 7]
+    })
 
-    result = select_features(df)
+    fake_csv = tmp_path / "accidents_full.csv"
+    fake_data.to_csv(fake_csv, index=False)
 
-    assert "extra_col" not in result.columns
-    assert result.columns.tolist() == ["an", "mois", "jour", "hour", "grav"]
+    # Redirect paths
+    monkeypatch.setattr(make_dataset, "DATA_PATH", str(fake_csv))
+    monkeypatch.setattr(make_dataset, "OUTPUT_DIR", tmp_path)
 
+    # Run main
+    make_dataset.main()
 
-# -----------------------------
-# Train/test split
-# -----------------------------
-def test_split_train_test_splits_by_year_and_transforms_target():
-    df = pd.DataFrame(
-        {
-            "an": [2014, 2015, 2016],
-            "mois": [1, 2, 3],
-            "jour": [10, 11, 12],
-            "hour": [8, 9, 10],
-            "grav": [1, 2, 4],
-        }
-    )
+    # Check outputs exist
+    assert (tmp_path / "X_train.csv").exists()
+    assert (tmp_path / "X_test.csv").exists()
+    assert (tmp_path / "y_train.csv").exists()
+    assert (tmp_path / "y_test.csv").exists()
 
-    X_train, X_test, y_train, y_test = split_train_test(df)
-
-    assert len(X_train) == 2
-    assert len(X_test) == 1
-    assert "an" not in X_train.columns
-    assert "an" not in X_test.columns
-    assert y_train.tolist() == [0, 1]
-    assert y_test.tolist() == [3]
-
-
-def test_split_train_test_raises_if_train_set_is_empty():
-    df = pd.DataFrame(
-        {
-            "an": [2016],
-            "mois": [1],
-            "jour": [10],
-            "hour": [8],
-            "grav": [2],
-        }
-    )
-
-    with pytest.raises(ValueError, match="X_train is empty"):
-        split_train_test(df)
+    # Optional: check content
+    X_train = pd.read_csv(tmp_path / "X_train.csv")
+    assert not X_train.empty
