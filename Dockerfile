@@ -5,7 +5,6 @@ FROM python:3.12-slim
 # ENV PYTHONUNBUFFERED = 1
 
 # Set working directory
-
 WORKDIR /app
 
 # Copy requirements.txt

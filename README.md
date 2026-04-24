@@ -47,37 +47,6 @@ Because in real life:
 model learns from past - predicts future
 
 
-mar26bmlops_int_accidents/
-
-│
-├── data/
-│   ├   data/ │     
-│   ├── caracteristiques/
-│   ├── usagers/
-│   ├── lieux/
-│   ├── vehicules/                   
-│   └── accidents_full.csv     merged dataset
-│   └── preprocessed/
-│               ├── X_train.csv
-│               ├── X_test.csv
-│               ├── y_train.csv
-│               └── y_test.csv
-│
-├── src/
-│   ├
-│   └── make_dataset.py       (clean + split + feature engineering)
-│   └── train_model.py
-│   │    
-│   └── evaluate_model.py      (metrics only) (directly inside src)
-│
-├── models/
-│         └── model.pkl                  (later)
-├── dvc.yaml                               (later)
-├── README.md
-├── requirements.txt
-
-
-
 ## ML Pipeline (DVC)
 
 The project pipeline is fully managed using DVC:
@@ -115,7 +84,7 @@ Current baseline results:
 - Accuracy: ~0.61
 - F1-score: ~0.59
 
-# Note: Class imbalance affects minority class prediction performance.
+**Note**: Class imbalance affects minority class prediction performance.
 
 ---
 

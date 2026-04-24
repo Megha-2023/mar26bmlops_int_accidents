@@ -131,7 +131,7 @@ def make_dataset(
     X_test[:] = imputer.transform(X_test)
 
     print("Saving processed Data to files.......")
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    
     X_train.to_csv(output_dir / "X_train.csv", index=False)
     X_test.to_csv(output_dir / "X_test.csv", index=False)
     y_train.to_csv(output_dir / "y_train.csv", index=False)

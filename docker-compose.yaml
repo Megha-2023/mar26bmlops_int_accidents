@@ -1,4 +1,33 @@
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
+  image: accident-airflow:latest
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: "nHCPj9XNchnGV6f2JPC3WcSO7eKMsAmLe0p88CLpDp4="
+    AIRFLOW__WEBSERVER__SECRET_KEY: "7ae162eddb6167a9e537b5d01f34395b6c3810a5ca7ecaa7667faa2e0de8eccf"
+    AIRFLOW__CORE__PARALLELISM: 1
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 1
+    MLFLOW_TRACKING_URI: http://mlflow:5000
+    MLFLOW_ARTIFACT_ROOT: http://mlflow:5000
+    PYTHONPATH: /opt/airflow
+  volumes:
+    - ./src:/opt/airflow/src
+    - ./dags:/opt/airflow/dags
+    - ./data:/opt/airflow/data
+    - ./models:/opt/airflow/models
+    - ./metrics:/opt/airflow/metrics
+    - ./params.json:/opt/airflow/params.json
+  depends_on:
+    postgres:
+      condition: service_healthy
+    mlflow:
+      condition: service_started
+
 services:
+  # ------ MLflow ----------
   mlflow:
     image: ghcr.io/mlflow/mlflow
     container_name: mlflow
@@ -14,18 +43,12 @@ services:
       --serve-artifacts
       --allowed-hosts '*'
   
-  dvc:
-    image: accident-prediction:latest
-    container_name: dvc
-    working_dir: /app
-    command: dvc repro
-    environment:
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
-    depends_on:
-      - mlflow
-
+  # -------- API -----------
   api:
-    image: accident-prediction:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: accident-api:latest
     container_name: api
     working_dir: /app
     command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
@@ -33,12 +56,13 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     depends_on:
       - mlflow
-      - dvc
 
+  # ----- NGINX -------
   nginx:
     build:
       context: deployments/nginx/
       dockerfile: Dockerfile
+    image: accident-nginx:latest
     container_name: nginx_revproxy
     ports:
       - "8080:443"
@@ -48,7 +72,56 @@ services:
     depends_on:
       - api
 
+  # ------ Airflow Postgres -------
+  postgres:
+    image: postgres:13
+    container_name: airflow_postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
+  # ------ Airflow Init -------------
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow_init
+    entrypoint: /bin/bash
+    command: >
+      -c "airflow db migrate &&
+          airflow users create --username admin --password pass123 --firstname TestAdmin --lastname user --role Admin --email admin@example.com || true"
+    volumes:
+      - ./src:/opt/airflow/src
+    restart: "no"
+
+  # ------ Airflow WebServer -----
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow_webserver
+    command: airflow webserver --port 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ------- Airflow Scheduler ------ 
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow_scheduler
+    command: airflow scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
 volumes:
   mlflow_data:
+  postgres_data:
 
  
