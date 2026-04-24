@@ -205,3 +205,17 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Artifacts
+data/accidents_full.csv
+data/preprocessed/
+models/
+non_sync/
+reports/
+data/caracteristiques/
+data/lieux/
+data/usagers/
+data/vehicules/
+data/processed/*
+!data/processed/*.dvc

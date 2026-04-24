@@ -1,10 +1,21 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 import pandas as pd
 
-from .schemas import PredictionRequest, PredictionResponse
-from .model_loader import load_model
+from src.api.model_loader import load_model as load_api_model
+from src.api.schemas import PredictionRequest, PredictionResponse
+from src.monitoring.data_loader import load_current_data, load_reference_data
+from src.monitoring.evidently_report import (
+    generate_data_drift_report,
+    generate_prediction_drift_report,
+)
+from src.monitoring.model_loader import (
+    generate_predictions,
+    load_model as load_monitoring_model,
+)
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +24,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Accident Severity Prediction API",
     description="FastAPI service for serving the trained XGBoost accident model.",
-    version="1.1.0",
+    version="1.2.0",
     openapi_tags=[
         {
             "name": "System",
@@ -22,12 +33,16 @@ app = FastAPI(
         {
             "name": "Inference",
             "description": "Endpoints used for accident severity prediction."
+        },
+        {
+            "name": "Monitoring",
+            "description": "Endpoints for Evidently monitoring reports."
         }
     ]
 )
 
-# Load the model once when the API starts
-model = load_model()
+# Load the API model once when the API starts
+model = load_api_model()
 
 # Exact feature order expected by the model
 MODEL_COLUMNS = [
@@ -35,6 +50,15 @@ MODEL_COLUMNS = [
     "circ", "nbv", "vosp", "surf", "infra", "situ", "lat", "long",
     "place", "catu", "sexe", "locp", "actp", "etatp", "catv", "victim_age"
 ]
+
+
+def attach_prediction_column(model_obj, data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Return a copy of the input data with a prediction column added.
+    """
+    data_with_predictions = data.copy()
+    data_with_predictions["prediction"] = generate_predictions(model_obj, data)
+    return data_with_predictions
 
 
 @app.get(
@@ -49,7 +73,9 @@ def root():
         "docs_url": "/docs",
         "health_endpoint": "/health",
         "model_info_endpoint": "/model-info",
-        "predict_endpoint": "/predict"
+        "predict_endpoint": "/predict",
+        "data_drift_report_endpoint": "/monitor/report/data",
+        "prediction_drift_report_endpoint": "/monitor/report/prediction",
     }
 
 
@@ -86,22 +112,17 @@ def model_info():
 )
 def predict(payload: PredictionRequest):
     try:
-        # Export request body using aliases so that
-        # 'intersection_type' becomes 'int'
         payload_dict = payload.model_dump(by_alias=True)
 
-        logger.info(f"Received prediction request: {payload_dict}")
+        logger.info("Received prediction request: %s", payload_dict)
 
-        # Build a one-row DataFrame with the exact feature order expected by the model
         data = pd.DataFrame(
             [[payload_dict[col] for col in MODEL_COLUMNS]],
             columns=MODEL_COLUMNS
         )
 
-        # Predict probabilities for all classes
         proba = model.predict_proba(data)[0]
 
-        # Predicted class = index of max probability
         prediction = int(proba.argmax())
         confidence = float(max(proba))
 
@@ -140,7 +161,9 @@ def predict(payload: PredictionRequest):
         }
 
         logger.info(
-            f"Prediction successful: class={prediction}, confidence={confidence:.4f}"
+            "Prediction successful: class=%s, confidence=%.4f",
+            prediction,
+            confidence
         )
 
         return {
@@ -151,9 +174,84 @@ def predict(payload: PredictionRequest):
             "probabilities": probabilities
         }
 
-    except Exception as e:
-        logger.error(f"Prediction failed: {str(e)}")
+    except Exception as exc:
+        logger.error("Prediction failed: %s", str(exc))
         raise HTTPException(
             status_code=500,
             detail="Internal server error during prediction"
+        ) from exc
+
+
+@app.get(
+    "/monitor/report/{report_type}",
+    tags=["Monitoring"],
+    summary="Generate and serve an Evidently monitoring report",
+    description=(
+        "Generates an Evidently HTML report using the reference and current "
+        "datasets, then serves the HTML file directly. "
+        "Supported report types: 'data' and 'prediction'."
+    )
+)
+def get_monitoring_report(report_type: str):
+    try:
+        logger.info("Generating monitoring report of type: %s", report_type)
+
+        reference_data = load_reference_data()
+        current_data = load_current_data()
+
+        if report_type == "data":
+            report_path = generate_data_drift_report(
+                reference_data=reference_data,
+                current_data=current_data,
+                report_name="xtrain_vs_xtest_drift_report.html",
+            )
+
+        elif report_type == "prediction":
+            monitoring_model = load_monitoring_model()
+
+            reference_with_predictions = attach_prediction_column(
+                monitoring_model,
+                reference_data
+            )
+            current_with_predictions = attach_prediction_column(
+                monitoring_model,
+                current_data
+            )
+
+            report_path = generate_prediction_drift_report(
+                reference_data=reference_with_predictions,
+                current_data=current_with_predictions,
+                prediction_column="prediction",
+                report_name="xtrain_vs_xtest_prediction_drift_report.html",
+            )
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid report type. Use 'data' or 'prediction'."
+            )
+
+        report_path = Path(report_path)
+
+        if not report_path.exists():
+            raise HTTPException(
+                status_code=500,
+                detail="Monitoring report was not generated successfully."
+            )
+
+        logger.info("Monitoring report ready: %s", report_path)
+
+        return FileResponse(
+            path=report_path,
+            media_type="text/html",
+            filename=report_path.name,
         )
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Monitoring report generation failed: %s", str(exc))
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error during monitoring report generation"
+        ) from exc
