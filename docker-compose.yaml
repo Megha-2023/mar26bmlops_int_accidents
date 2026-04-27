@@ -12,6 +12,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 1
     MLFLOW_TRACKING_URI: http://mlflow:5000
     MLFLOW_ARTIFACT_ROOT: http://mlflow:5000
+    MLFLOW_MODEL_URI: models:/accident_prediction@challenger
     PYTHONPATH: /opt/airflow
   volumes:
     - ./src:/opt/airflow/src
@@ -54,6 +55,7 @@ services:
     command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_MODEL_URI=models:/accident_prediction@challenger
     depends_on:
       - mlflow
 
@@ -66,6 +68,8 @@ services:
     container_name: nginx_revproxy
     ports:
       - "8080:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./deployments/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deployments/nginx/certs:/etc/nginx/certs:ro

@@ -1,3 +1,7 @@
+# Python 3.12 API/runtime dependencies
+# The current MLflow-served model behind `@challenger` is stored as UBJ and
+# was logged with XGBoost 3.2.0, so keep this aligned with that artifact.
+
 # Core ML + Data
 pandas==2.3.3
 numpy==2.4.3
@@ -16,14 +20,9 @@ fastapi==0.135.1
 uvicorn==0.41.0
 wcwidth==0.6.0
 Werkzeug==3.1.6
-xgboost==3.2.0
 zipp==3.23.0
 httpx==0.28.1
 evidently==0.7.21
-httpx==0.28.1
 
 # Testing
 pytest==9.0.2
-
-# Monitoring
-evidently==0.7.12

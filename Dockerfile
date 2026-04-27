@@ -1,19 +1,16 @@
 FROM python:3.12-slim
 
-# Prevent python from writing pyc files 
-# ENV PYTHONDONTWRITEBYTECODE = 1
-# ENV PYTHONUNBUFFERED = 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements.txt
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install -r requirements.txt
 
-# Copy whole project
 COPY . .
 
-# Set python path
-ENV PYTHONPATH = /app
+ENV PYTHONPATH=/app
