@@ -43,12 +43,18 @@ jobs:
       # Build base image
       - name: Build base image
         run: docker build -t ml-base:latest -f Dockerfile.base .
-  
+
+      # Build api image
+      - name: Build API Image
+        run: docker build -t api:latest -f Dockerfile.api .
+      
+      # Build mlpipeline image
+      - name: Build ML image
+        run: docker build -t mlpipeline:latest -f Dockerfile.ml .
+
       # Build all services
       - name: Build Docker Compose stack
         run: |
-          docker build -t mlpipeline:latest -f Dockerfile.ml .
-          docker build -t api:latest -f Dockerfile.api .
           docker compose build airflow-init
           docker compose build nginx
           docker compose build mlflow
