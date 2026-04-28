@@ -46,7 +46,7 @@ jobs:
 
       # Build api image
       - name: Build API Image
-        run: docker build -t api:latest -f Dockerfile.api .
+        run: docker build -t accident-api:latest -f Dockerfile.api .
       
       # Build mlpipeline image
       - name: Build ML image
@@ -55,7 +55,9 @@ jobs:
       # Build all services
       - name: Build Docker Compose stack
         run: |
-          docker compose build
+          docker compose build airflow-init
+          docker compose build mlflow
+          dokcer compose build nginx
       
       # Start services in background
       - name: Start services
