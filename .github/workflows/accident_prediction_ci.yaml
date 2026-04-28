@@ -58,13 +58,12 @@ jobs:
 
       # Build all services
       - name: Build Docker Compose stack
-        run: |
-          docker compose build airflow-init postgres
+        run: docker compose build mlflow
       
       # Start services in background
       - name: Start services
         run: |
-          docker compose up airflow-init airflow-webserver airflow-scheduler -d --pull=never
+          docker compose up ml-service mlflow
 
       # Wait for services to stabilize
       - name: Wait for services
