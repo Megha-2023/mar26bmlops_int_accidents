@@ -47,7 +47,11 @@ jobs:
       # Build all services
       - name: Build Docker Compose stack
         run: |
-          docker compose build
+          docker compose build -t ml-pipeline:latest -f Dockerfile.ml .
+          docker compose build -t api:latest -f Dockerfile.api .
+          docker compose build airflow-init
+          docker compose build nginx
+          docker compose build mlflow
       
       # Start services in background
       - name: Start services
