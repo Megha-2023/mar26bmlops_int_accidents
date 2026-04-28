@@ -37,6 +37,9 @@ jobs:
         run: pytest -q
 
   docker-build:
+    name: Docker build Validattion
+    runs-on: ubuntu-latest
+  
     steps:
       # 1. Checkout repo
       - name: Checkout code
