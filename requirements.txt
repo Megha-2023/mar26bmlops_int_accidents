@@ -1,28 +1,22 @@
-# Python 3.12 API/runtime dependencies
-# The current MLflow-served model behind `@challenger` is stored as UBJ and
-# was logged with XGBoost 3.2.0, so keep this aligned with that artifact.
+# ---------------- CORE NUMPY STACK (MUST BE PINNED) ----------------
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.11.4
 
-# Core ML + Data
-pandas==2.3.3
-numpy==2.4.3
-scikit-learn==1.8.0
-xgboost==3.2.0
-joblib==1.5.3
+# ---------------- ML STACK ----------------
+scikit-learn==1.4.2
+xgboost==2.1.1
+joblib==1.3.2
 
-# MLOps / Pipeline
-mlflow==3.10.1
-dvc[s3]==3.67.0
-prometheus-client==0.20.0
-python-dotenv==1.2.2
+# ---------------- MLOPS ----------------
+mlflow==2.10.2
+dill
 
-# API
-fastapi==0.135.1
-uvicorn==0.41.0
-wcwidth==0.6.0
-Werkzeug==3.1.6
-zipp==3.23.0
-httpx==0.28.1
-evidently==0.7.21
+# ---------------- API ----------------
+fastapi==0.110.0
+uvicorn==0.27.1
+httpx==0.25.2
 
-# Testing
-pytest==9.0.2
+# ---------------- AIRFLOW SAFE UTILS ----------------
+requests==2.31.0
+pyyaml==6.0.1

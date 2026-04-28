@@ -1,10 +1,16 @@
 import pandas as pd
 from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score, classification_report
 import joblib
 import json
 import os
 from pathlib import Path
+
+
+# DATA_DIR = Path("/opt/airflow")
+
+DEFAULT_DATA_PATH = "data/preprocessed"
+DEFAULT_MODEL_PATH = "models/xgb_model.pkl"
+DEFAULT_PARAM_PATH = "params.json"
 
 
 def model_is_up_to_date(model_path, training_files):
@@ -21,9 +27,9 @@ def count_csv_rows(path):
 
 
 def train_model(
-        data_path="data/preprocessed",
-        model_path="models/xgb_model.pkl",
-        params_path="params.json",
+        data_path=DEFAULT_DATA_PATH,
+        model_path=DEFAULT_MODEL_PATH,
+        params_path=DEFAULT_PARAM_PATH,
         force=False
 ):
 

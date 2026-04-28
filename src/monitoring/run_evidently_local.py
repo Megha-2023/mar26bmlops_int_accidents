@@ -6,7 +6,7 @@ from src.monitoring.evidently_report import (
     generate_data_drift_report,
     generate_prediction_drift_report,
 )
-from src.monitoring.model_loader import generate_predictions, load_model
+from src.model_registry import generate_predictions, load_local_model
 
 
 def attach_prediction_column(model, data: pd.DataFrame) -> pd.DataFrame:
@@ -21,7 +21,7 @@ def attach_prediction_column(model, data: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     reference_data = load_reference_data()
     current_data = load_current_data()
-    model = load_model()
+    model = load_local_model()
 
     data_drift_report_path = generate_data_drift_report(
         reference_data=reference_data,
