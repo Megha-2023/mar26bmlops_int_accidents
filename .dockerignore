@@ -1,0 +1,23 @@
+.git
+.github
+.dvc
+.pytest_cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local envs and caches
+tempenv/
+.venv/
+venv/
+
+# Runtime artifacts
+mlruns/
+metrics/
+models/
+data/
+*.log
+
+# Local/editor files
+.DS_Store

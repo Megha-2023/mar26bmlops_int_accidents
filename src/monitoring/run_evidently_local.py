@@ -1,11 +1,13 @@
 import pandas as pd
 
-from src.monitoring.data_loader import load_current_data, load_reference_data
-from src.monitoring.evidently_report import (
+from data_loader import load_current_data, load_reference_data
+from model_loader import generate_predictions
+from evidently_report import (
+    DEFAULT_REPORTS_DIR,
     generate_data_drift_report,
     generate_prediction_drift_report,
 )
-from src.monitoring.model_loader import generate_predictions, load_model
+from src.model_registry import load_local_model
 
 
 def attach_prediction_column(model, data: pd.DataFrame) -> pd.DataFrame:
@@ -20,12 +22,13 @@ def attach_prediction_column(model, data: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     reference_data = load_reference_data()
     current_data = load_current_data()
-    model = load_model()
+    model = load_local_model()
 
     data_drift_report_path = generate_data_drift_report(
         reference_data=reference_data,
         current_data=current_data,
         report_name="xtrain_vs_xtest_drift_report.html",
+        reports_dir=DEFAULT_REPORTS_DIR,
     )
 
     reference_with_predictions = attach_prediction_column(model, reference_data)
@@ -36,6 +39,7 @@ def main() -> None:
         current_data=current_with_predictions,
         prediction_column="prediction",
         report_name="xtrain_vs_xtest_prediction_drift_report.html",
+        reports_dir=DEFAULT_REPORTS_DIR,
     )
 
     print(f"Data drift report saved to: {data_drift_report_path}")

@@ -3,8 +3,12 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.impute import SimpleImputer
 from pathlib import Path
 
-DEFAULT_DATA_PATH = "data/accidents_full.csv"
-DEFAULT_OUTPUT_DIR = Path("data/preprocessed")
+DATA_DIR = Path("/opt/airflow/data")
+
+DEFAULT_DATA_PATH = DATA_DIR / "accidents_full.csv"
+DEFAULT_OUTPUT_DIR = DATA_DIR / "preprocessed"
+
+DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 CHUNK_SIZE = 100_000
 REQUIRED_SOURCE_COLUMNS = [
     "an", "mois", "jour", "hrmn", "lum", "int", "atm", "col", "catr", "circ",

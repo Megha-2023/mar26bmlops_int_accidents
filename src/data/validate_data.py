@@ -2,9 +2,14 @@ import pandas as pd
 import os
 from pathlib import Path
 
+DATA_DIR = Path("/opt/airflow/data")
+
+DEFAULT_RAW_DATA_PATH = DATA_DIR / "accidents_full.csv"
+DEFAULT_PROCESSED_DATA_PATH = DATA_DIR / "preprocessed"
+
 
 # ── Validate raw data before preprocessing ──
-def validate_raw(data_path="data/accidents_full.csv"):
+def validate_raw(data_path=DEFAULT_RAW_DATA_PATH):
     print(f"Validating raw data at: {data_path}")
 
     if not os.path.exists(data_path):
@@ -23,7 +28,7 @@ def validate_raw(data_path="data/accidents_full.csv"):
 
 
 # ── Validate preprocessed splits before training ─
-def validate_preprocessed(data_path="data/preprocessed"):
+def validate_preprocessed(data_path=DEFAULT_PROCESSED_DATA_PATH):
     print(f"Validating preprocessed data at: {data_path}")
     data_path = Path(data_path)
 

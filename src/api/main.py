@@ -5,13 +5,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 import pandas as pd
 
-from src.api.model_loader import load_model as load_api_model
+from src.model_registry import load_local_model
 from src.api.schemas import PredictionRequest, PredictionResponse
 from src.monitoring.data_loader import load_current_data, load_reference_data
-from src.monitoring.evidently_report import (
-    generate_data_drift_report,
-    generate_prediction_drift_report,
-)
 from src.monitoring.model_loader import (
     generate_predictions,
     load_model as load_monitoring_model,
@@ -42,7 +38,7 @@ app = FastAPI(
 )
 
 # Load the API model once when the API starts
-model = load_api_model()
+model = load_local_model()
 
 # Exact feature order expected by the model
 MODEL_COLUMNS = [
@@ -192,9 +188,14 @@ def predict(payload: PredictionRequest):
         "Supported report types: 'data' and 'prediction'."
     )
 )
+
 def get_monitoring_report(report_type: str):
     try:
         logger.info("Generating monitoring report of type: %s", report_type)
+        from src.monitoring.evidently_report import (
+            generate_data_drift_report,
+            generate_prediction_drift_report,
+        )
 
         reference_data = load_reference_data()
         current_data = load_current_data()
