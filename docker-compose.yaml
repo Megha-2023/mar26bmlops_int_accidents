@@ -51,7 +51,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ml
-    image: ml-pipeline:latest
+    image: mlpipeline:latest
     container_name: ml_train
     working_dir: /app
     volumes:

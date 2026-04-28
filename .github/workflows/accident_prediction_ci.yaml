@@ -55,13 +55,12 @@ jobs:
       # Build all services
       - name: Build Docker Compose stack
         run: |
-          docker compose build airflow-init
-          docker compose build nginx
-          docker compose build mlflow
+          docker compose build
       
       # Start services in background
       - name: Start services
         run: |
+          docker login
           docker compose up -d
 
       # Wait for services to stabilize
