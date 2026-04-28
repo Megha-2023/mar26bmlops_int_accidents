@@ -63,7 +63,7 @@ jobs:
       - name: Start services
         run: |
           docker login
-          docker compose up -d
+          docker compose up -d --pull=never
 
       # Wait for services to stabilize
       - name: Wait for services
