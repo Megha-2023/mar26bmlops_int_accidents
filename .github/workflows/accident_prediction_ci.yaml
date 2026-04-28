@@ -57,7 +57,7 @@ jobs:
         run: |
           docker compose build airflow-init
           docker compose build mlflow
-          dokcer compose build nginx
+          docker compose build nginx
       
       # Start services in background
       - name: Start services
