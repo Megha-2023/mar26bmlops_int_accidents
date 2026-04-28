@@ -1,7 +1,6 @@
 import pandas as pd
 import joblib
 import json
-import os
 import matplotlib.pyplot as plt
 from pathlib import Path
 from sklearn.preprocessing import label_binarize

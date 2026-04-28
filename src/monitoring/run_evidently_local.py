@@ -1,12 +1,13 @@
 import pandas as pd
 
-from src.monitoring.data_loader import load_current_data, load_reference_data
-from src.monitoring.evidently_report import (
+from data_loader import load_current_data, load_reference_data
+from model_loader import generate_predictions
+from evidently_report import (
     DEFAULT_REPORTS_DIR,
     generate_data_drift_report,
     generate_prediction_drift_report,
 )
-from src.model_registry import generate_predictions, load_local_model
+from src.model_registry import load_local_model
 
 
 def attach_prediction_column(model, data: pd.DataFrame) -> pd.DataFrame:

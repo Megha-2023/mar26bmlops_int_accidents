@@ -188,6 +188,7 @@ def predict(payload: PredictionRequest):
         "Supported report types: 'data' and 'prediction'."
     )
 )
+
 def get_monitoring_report(report_type: str):
     try:
         logger.info("Generating monitoring report of type: %s", report_type)

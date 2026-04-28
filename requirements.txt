@@ -20,3 +20,7 @@ httpx==0.25.2
 # ---------------- AIRFLOW SAFE UTILS ----------------
 requests==2.31.0
 pyyaml==6.0.1
+
+# ---------------- Monitoring -----------
+evidently
+prometheus-client

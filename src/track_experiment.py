@@ -1,4 +1,5 @@
 import mlflow
+import time
 from mlflow import MlflowClient
 import os
 import json
@@ -16,7 +17,23 @@ DEFAULT_MODEL_PATH = "models/xgb_model.pkl"
 DEFAULT_PARAM_PATH = "params.json"
 DEFAULT_PARAM_PATH = "params.json"
 
+
+def wait_for_mlflow():
+    for i in range(20):
+        try:
+            mlflow.set_tracking_uri("http://mlflow:5000")
+            mlflow.search_experiments()
+            print("MLflow is ready")
+            return
+        except Exception as e:
+            print(f"MLflow not ready, retrying... {i}")
+            time.sleep(3)
+    raise Exception("MLflow not reachable")
+
+
 def get_or_create_experiment(client, experiment_name):
+    
+    wait_for_mlflow()
     experiment = client.get_experiment_by_name(experiment_name)
     if experiment is None:
         experiment_id = client.create_experiment(
