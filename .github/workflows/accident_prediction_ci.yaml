@@ -44,6 +44,10 @@ jobs:
       - name: Build base image
         run: docker build -t ml-base:latest -f Dockerfile.base .
 
+      # Verify base image exists
+      - name: Verify ml-base exists
+        run: docker images | grep ml-base || (echo "ml-base not found" && exit 1)
+
       # Build api image
       - name: Build API Image
         run: docker build -t accident-api:latest -f Dockerfile.api .
@@ -55,14 +59,12 @@ jobs:
       # Build all services
       - name: Build Docker Compose stack
         run: |
-          docker compose build airflow-init
-          docker compose build mlflow
-          docker compose build nginx
+          docker compose build --no-cache
       
       # Start services in background
       - name: Start services
         run: |
-          docker compose up -d --pull=never
+          docker compose up mlflow -d --pull=never
 
       # Wait for services to stabilize
       - name: Wait for services
