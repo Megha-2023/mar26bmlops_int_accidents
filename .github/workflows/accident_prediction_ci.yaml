@@ -31,6 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install setuptools
           pip install -r requirements.txt
           pip install pytest
 
@@ -46,6 +47,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Show workspace
+      - name: Show workspace
+        run: |
+          pwd
+          ls -R
+
       # Set up Docker Buildx
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
@@ -58,7 +65,7 @@ jobs:
       
       # Build base image
       - name: Build base image
-        run: docker build -t ml-base:latest ./ml-base
+        run: docker build -t ml-base:latest ./docker/ml-base
       
       # Build all services
       - name: Build Docker Compose stack
