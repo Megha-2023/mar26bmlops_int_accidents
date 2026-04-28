@@ -1,60 +1,57 @@
 name: Accident Prediction CI/CD
 
 # Trigger the workflow on push to main or pull requests
+
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    types: [opened, reopened, synchronize]
-
+  push:
+    branches: [ "master" , "feature/airflow_grafana_ci"]
+  
 jobs:
-  data-validation:
+  test:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Validate dataset
-        run: python src/validate_data.py
-        shell: python
 
-  train-model:
-    runs-on: ubuntu-latest
-    needs: data-validation
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Train model
-        run: python src/train_model.py
-        shell: python
+      # 1. Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  evaluate-model:
-    runs-on: ubuntu-latest
-    needs: train-model
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-      - name: Install dependencies
+      # 2. Set up Docker Buildx
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Install Docker Compose (new plugin style)
+      - name: Install Docker Compose
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Evaluate model
-        run: python src/evaluate_model.py
-        shell: python
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin
+
+      # 4. Build all services
+      - name: Build Docker Compose stack
+        run: |
+          docker compose build
+
+      # 5. Start services in background
+      - name: Start services
+        run: |
+          docker compose up -d
+
+      # 6. Wait for services to stabilize
+      - name: Wait for services
+        run: |
+          echo "Waiting for services..."
+          sleep 30
+
+      # 7. Check running containers
+      - name: Docker ps
+        run: docker ps
+
+      # RUN pytest if tests are outside containers:
+      - name: Run pytest locally
+        run: pip install -r requirements.txt && pytest
+
+      # 9. Tear down stack
+      - name: Shutdown services
+        if: always()
+        run: |
+          docker compose down -v
