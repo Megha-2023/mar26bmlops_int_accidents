@@ -14,8 +14,9 @@ env:
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
 jobs:
-  evaluate-model:
-    name: Model Evaluation
+  
+  docker-build:
+    name: Docker build Validattion
     runs-on: ubuntu-latest
   
     steps:
@@ -29,49 +30,78 @@ jobs:
           pwd
           ls -R
 
-      # Install dependencies
-      - name: Install d dencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
-          pip install pytest
+      # Set up Docker Buildx
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
 
-      # Run evaluation script
-      - name: Run model evaluation
+      # Docker Compose Version
+      - name: Docker Compose version
         run: |
-          python src/models/evaluate_model.py
+          sudo apt-get update
+          docker compose version
+      
+      # Build base image
+      - name: Build base image
+        run: docker build -t ml-base:latest -f Dockerfile.base .
 
-      # Upload metrics as artifact
-      - name: Upload metrics
-        uses: actions/upload-artifact@v4
-        with:
-          name: evaluation-metrics
-          path: |
-            metrics/
+      # Verify base image exists
+      - name: Verify ml-base exists
+        run: docker images | grep ml-base || (echo "ml-base not found" && exit 1)
+
+      # Build api image
+      - name: Build API Image
+        run: docker build -t accident-api:latest -f Dockerfile.api .
+      
+      # Build mlpipeline image
+      - name: Build ML image
+        run: docker build -t mlpipeline:latest -f Dockerfile.ml .
+
+      # Build all services
+      - name: Build Docker Compose stack
+        run: |
+          docker compose build airflow-init mlflow
+      
+      # Start services in background
+      - name: Start services
+        run: |
+          docker compose up mlflow airflow-init airflow-webserver airflow-scheduler -d --pull=never
+
+      # Wait for services to stabilize
+      - name: Wait for services
+        run: |
+          echo "Waiting for services..."
+          sleep 30
+
+      # Check running containers
+      - name: Docker ps
+        run: docker ps
+
+      # Tear down stack
+      - name: Shutdown services
+        if: always()
+        run: |
+          docker compose down -v
   
   tests:
-    name: Unit Tests
+    name: Unit tests
     runs-on: ubuntu-latest
-    needs: evaluate-model
-  
+    needs: docker-build
+
     steps:
-      # Checkout repo
-      - name: Checkout code
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      # Show workspace
-      - name: Show workspace
-        run: |
-          pwd
-          ls -R
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
 
-      # Install dependencies
-      - name: Install d dencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
           pip install pytest
-      
-      # Run tests
-      - name: Run tests
-        run: pytest -q       
+
+      - name: Run unit tests
+        run: pytest -q
